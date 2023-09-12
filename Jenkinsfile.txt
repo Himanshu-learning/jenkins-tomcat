@@ -1,74 +1,42 @@
 pipeline {
-   
     agent any
-   
     tools {
-       
         maven 'Maven-Tool'
-       
     }
-   
-    environment {
-           
-            IP_ADDRESS = "172.31.89.210"
-        }
-   
     stages {
-       
-        stage ("Git Checkout") {
-           
+        stage("Git Checkout") {
             steps {
-               
-                git url: 'https://github.com/Shahid199578/firstrepo.git'
-               
+                git branch: 'main', url: 'https://github.com/Himanshu-learning/ArchiveMavenArtifact.git'
             }
-           
         }
-       
-        stage ("Maven Build") {
-           
+        stage("Maven Build") {
             steps {
-               
                 sh "mvn clean package"
-               
             }
         }
-       
-        stage ("Upload War File") {
-           
+        stage("Archive Artifact") {
             steps {
-                sh 'sudo cp target/*.war /opt/apache-tomcat-9.0.76/webapps'               
-                          
-            }           
+                archiveArtifacts 'target/*.war'
+            }
         }
-       
-        stage ("Upload-Artifact") {
-           
+        
+        stage ('Deploying Artifact') {
+            
             steps {
-               
+                
                 script {
-                   
-                    def mavenPom = readMavenPom file: 'pom.xml'
-                   
-                    nexusArtifactUploader artifacts: [
-                        [
-                            artifactId: "${mavenPom.artifactId}",
-                            classifier: '',
-                            file: "target/${mavenPom.artifactId}.war",
-                            type: "${mavenPom.packaging}"
-                        ]
-                    ],
-                        credentialsId: 'nexus3',
-                        groupId: "${mavenPom.groupId}",
-                        nexusUrl: "${env.IP_ADDRESS}:8081",
-                        nexusVersion: 'nexus3',
-                        protocol: 'http',
-                        repository: 'Nexus-Pipeline/',
-                        version: "${mavenPom.version}"                   
+                    
+                    sshagent(credentials: ['Tomcat-server-key']) {
+                        
+                        sh "scp -o StrictHostKeyChecking=no $WORKSPACE/*/*.war ubuntu@34.201.125.73:/home/ubuntu"
+                        
+                    }
+                    
                 }
-               
+                
+                
             }
-           
-        }       
+            
+        }
     }
 }
