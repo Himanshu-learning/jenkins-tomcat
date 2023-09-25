@@ -21,22 +21,13 @@ pipeline {
         }
         
         stage ('Deploying Artifact') {
-            
             steps {
-                
-                script {
-                    
+                script { 
                     sshagent(credentials: ['Tomcat-server-key']) {
-                        
                         sh "scp -o StrictHostKeyChecking=no $WORKSPACE/*/*.war ubuntu@34.201.125.73:/home/ubuntu"
-                        
                     }
-                    
                 }
-                
-                
             }
-            
         }
     }
 }
