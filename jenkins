@@ -1,7 +1,7 @@
 pipeline {
     agent any
     tools {
-        maven 'Maven-Tool'
+        maven 'maven-tool'
     }
     stages {
         stage("Git Checkout") {
@@ -23,8 +23,9 @@ pipeline {
         stage ('Deploying Artifact') {
             steps {
                 script { 
-                    sshagent(credentials: ['Tomcat-server-key']) {
-                        sh "scp -o StrictHostKeyChecking=no $WORKSPACE/*/*.war ubuntu@34.201.125.73:/home/ubuntu"
+                    sshagent(['tomcat-server'])
+                    { 
+                        sh "scp -o StrictHostKeyChecking=no $WORKSPACE/*/*.war ubuntu@${TOMCAT_IP}:/opt/tomcat/webapps/"
                     }
                 }
             }
